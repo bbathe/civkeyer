@@ -13,6 +13,9 @@ var (
 
 	// civ connection
 	port *serial.Port
+
+	// user specified configuration file
+	configFile string
 )
 
 // executeFunction writes the appropriate CIV message associated with function to the configured CIV port

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -66,7 +67,18 @@ func civkeyerWindow() error {
 	// complete app initialization here so we can message the user if there's an issue
 	//
 
-	// log & config files are in the same directory as the executable with the same base name
+	// process command line
+	flg := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+	flg.StringVar(&configFile, "config", "", "Configuration file")
+	err = flg.Parse(os.Args[1:])
+	if err != nil {
+		e := fmt.Errorf("%s\n\nUsage of %s\n  -config string\n    Configuration file", err.Error(), os.Args[0])
+		msgError(tempWin, e)
+		log.Printf("%+v", err)
+		return err
+	}
+
+	// log file is in the same directory as the executable with the same base name
 	fn, err := os.Executable()
 	if err != nil {
 		msgError(tempWin, err)
@@ -86,8 +98,17 @@ func civkeyerWindow() error {
 	log.SetOutput(f)
 
 	// read config
+	var cfn string
+	if len(configFile) > 0 {
+		// if user passed a filename, use that
+		cfn = configFile
+	} else {
+		// default config file is in the same directory as the executable with the same base name
+		cfn = basefn + ".yaml"
+	}
+
 	// #nosec G304
-	bytes, err := ioutil.ReadFile(basefn + ".yaml")
+	bytes, err := ioutil.ReadFile(cfn)
 	if err != nil {
 		msgError(tempWin, err)
 		log.Printf("%+v", err)
