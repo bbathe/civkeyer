@@ -25,7 +25,7 @@ type configuration struct {
 // and we can have a little friendlier error messages
 func (c *configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	missingSection := "%s section missing from configuration file"
-	missingSetting := "%s setting missing from configuration file"
+	missingSetting := "%s setting missing from %s section in configuration file"
 
 	// get yaml contents as map
 	var cfg map[string]interface{}
@@ -44,14 +44,14 @@ func (c *configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	connection := cfg["connection"].(map[interface{}]interface{})
 
 	if connection["port"] == nil {
-		err = fmt.Errorf(missingSetting, "connection port")
+		err = fmt.Errorf(missingSetting, "connection port", "connection")
 		log.Printf("%+v", err)
 		return err
 	}
 	c.Connection.Port = connection["port"].(string)
 
 	if connection["baud"] == nil {
-		err = fmt.Errorf(missingSetting, "connection baud")
+		err = fmt.Errorf(missingSetting, "connection baud", "connection")
 		log.Printf("%+v", err)
 		return err
 	}
