@@ -7,8 +7,9 @@ import (
 )
 
 type Function struct {
-	Label   string
-	Message []byte
+	Label       string
+	Message     []byte
+	ExpectReply bool
 }
 
 // configuration holds the application configuration
@@ -99,7 +100,15 @@ func (c *configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			return err
 		}
 		c.Functions[i].Message = b
-	}
 
+		// get expectreply
+		if fn["expectreply"] == nil {
+			err = fmt.Errorf("function %d expectreply must be defined", i+1)
+			log.Printf("%+v", err)
+			return err
+		}
+		c.Functions[i].ExpectReply = fn["expectreply"].(bool)
+	}
+	log.Printf("%+v", c)
 	return nil
 }

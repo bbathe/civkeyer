@@ -23,15 +23,19 @@ To install this application:
       -
         label: F1 Callsign
         message: FEFE94E0280001FD
+        expectreply: true
       -
         label: F2 Exchange
         message: FEFE94E0280002FD
+        expectreply: true
       -
         label: F3 CQ
         message: FEFE94E0280003FD
+        expectreply: true
       -
         label: F4 QRZ
         message: FEFE94E0280004FD
+        expectreply: true
     ```
     - `connection` defines how the application connects to the radio.
       - `port` is the name of the Windows COM port to use to send the CI-V commands, this is setup when you install the device driver for the Cat Control Programming Cable.  You should be able to find this in Device Manager.
@@ -39,6 +43,7 @@ To install this application:
     - `functions` defines the commands that can be sent to the radio.  You can include up to 12 functions.
       - `label` is the button label you want associated with the function.  Hotkeys will be associated with each function command, starting with F1 for the first function, F2 for the second, etc.  So, you will probably want to include that in the label and then whatever note to remind you what it will do.
       - `message` is the byte code sequence to send to the radio, encoded as hex.  
+      - `expectreply` indicates if the radio will send a response to the command.  Most CI-V commands yield a response, but not all.
 4. You can now double-click on the `civkeyer.exe` file to start the application.  Creating a shortcut somewhere will make it easier to find in the future.  You can press the button or Hotkey to execute the function.  The application has to have focus in order for the Hotkeys to work.
 
 You can have multiple configuration files and switch between them by using the `config` command line switch:
