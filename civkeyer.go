@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 
@@ -17,6 +18,30 @@ var (
 	// user specified configuration file
 	configFile string
 )
+
+// readCIVMessageFromPort reads bytes from port and returns CIV message as string
+func readCIVMessageFromPort(p *serial.Port) ([]byte, error) {
+	var buf bytes.Buffer
+	b := []byte{0}
+
+	for {
+		n, err := p.Read(b)
+		if err != nil {
+			log.Printf("%+v", err)
+			return []byte{0}, err
+		}
+
+		if n > 0 {
+			// accumulate message bytes
+			buf.Write(b)
+
+			// return CIV message
+			if b[0] == 0xFD {
+				return buf.Bytes(), nil
+			}
+		}
+	}
+}
 
 // executeFunction writes the appropriate CIV message associated with function to the configured CIV port
 func executeFunction(function int) error {
@@ -45,9 +70,35 @@ func executeFunction(function int) error {
 		port.Close()
 		port = nil
 
-		err = fmt.Errorf("%+v Bytes: %X", err, b)
-		log.Printf("%+v", err)
+		log.Printf("%+v %X", err, b)
 		return err
+	}
+
+	// check response from radio
+	for {
+		r, err := readCIVMessageFromPort(port)
+		if err != nil {
+			log.Printf("%+v %X", err, b)
+			return err
+		}
+
+		// valid response should be 6 bytes
+		if len(r) < 6 {
+			err = fmt.Errorf("invalid response from radio")
+			log.Printf("%+v %X %X", err, b, r)
+			return err
+		}
+
+		// message for us from radio?
+		if r[2] == '\xE0' && r[3] == '\x94' {
+			// check status returned from radio
+			if r[4] != '\xFB' {
+				err = fmt.Errorf("error response from radio")
+				log.Printf("%+v %X %X", err, b, r)
+				return err
+			}
+			break
+		}
 	}
 
 	return nil
