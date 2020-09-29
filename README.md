@@ -41,6 +41,11 @@ To install this application:
       - `message` is the byte code sequence to send to the radio, encoded as hex.  
 4. You can now double-click on the `civkeyer.exe` file to start the application.  Creating a shortcut somewhere will make it easier to find in the future.  You can press the button or Hotkey to execute the function.  The application has to have focus in order for the Hotkeys to work.
 
+You can have multiple configuration files and switch between them by using the `config` command line switch:
+  ```yaml
+  civkeyer -config fieldday.yaml
+  ```
+
 There will be a log file created in the same directory as the executable and any errors are logged there.
 
 ## References
