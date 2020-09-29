@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/tarm/serial"
 )
@@ -24,21 +25,60 @@ func readCIVMessageFromPort(p *serial.Port) ([]byte, error) {
 	var buf bytes.Buffer
 	b := []byte{0}
 
+	// for {
+	// 	n, err := p.Read(b)
+	// 	if err != nil {
+	// 		log.Printf("%+v", err)
+	// 		return []byte{}, err
+	// 	}
+
+	// 	if n > 0 {
+	// 		// accumulate message bytes
+	// 		buf.Write(b)
+
+	// 		// message terminator?
+	// 		if b[0] == 0xFD {
+	// 			break
+	// 		}
+	// 	}
+	// }
+	// for {
+	// 	n, err := p.Read(b)
+	// 	if err != nil {
+	// 		log.Printf("%+v", err)
+	// 		return []byte{}, err
+	// 	}
+
+	// 	if n > 0 {
+	// 		// accumulate message bytes
+	// 		buf.Write(b)
+
+	// 		// message terminator?
+	// 		if b[0] == 0xFD {
+	// 			break
+	// 		}
+	// 	}
+	// }
+
 	for {
 		n, err := p.Read(b)
 		if err != nil {
 			log.Printf("%+v", err)
-			return []byte{0}, err
+			return []byte{}, err
 		}
 
 		if n > 0 {
 			// accumulate message bytes
 			buf.Write(b)
 
-			// return CIV message
+			// message terminator?
 			if b[0] == 0xFD {
+				// return CIV message
 				return buf.Bytes(), nil
 			}
+		} else {
+			// no data available to read within timeout
+			return []byte{}, nil
 		}
 	}
 }
@@ -50,8 +90,9 @@ func executeFunction(function int) error {
 	// connect to CIV port, if we aren't already
 	if port == nil {
 		c := &serial.Config{
-			Name: config.Connection.Port,
-			Baud: config.Connection.Baud,
+			Name:        config.Connection.Port,
+			Baud:        config.Connection.Baud,
+			ReadTimeout: time.Second * 10,
 		}
 
 		port, err = serial.OpenPort(c)
@@ -84,15 +125,19 @@ func executeFunction(function int) error {
 
 		// valid response should be 6 bytes
 		if len(r) < 6 {
+			if len(r) == 0 {
+				// no response from radio, which is OK for some commands
+				return nil
+			}
 			err = fmt.Errorf("invalid response from radio")
 			log.Printf("%+v %X %X", err, b, r)
 			return err
 		}
 
 		// message for us from radio?
-		if r[2] == '\xE0' && r[3] == '\x94' {
+		if r[2] == 0xE0 && r[3] == 0x94 {
 			// check status returned from radio
-			if r[4] != '\xFB' {
+			if r[4] != 0xFB {
 				err = fmt.Errorf("error response from radio")
 				log.Printf("%+v %X %X", err, b, r)
 				return err

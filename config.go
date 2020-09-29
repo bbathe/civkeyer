@@ -94,6 +94,7 @@ func (c *configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		b, err := hex.DecodeString(fn["message"].(string))
 		if err != nil {
+			err = fmt.Errorf("%+v. label: %s message: %s", err, fn["label"].(string), fn["message"].(string))
 			log.Printf("%+v", err)
 			return err
 		}
