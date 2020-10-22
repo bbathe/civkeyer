@@ -97,7 +97,7 @@ func executeFunction(function int) error {
 			}
 
 			// message for us from radio?
-			if r[2] == 0xE0 && r[3] == 0x94 {
+			if r[2] == 0xE0 {
 				// check status returned from radio
 				if r[4] != 0xFB {
 					err = fmt.Errorf("error response from radio")

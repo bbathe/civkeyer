@@ -109,6 +109,6 @@ func (c *configuration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		}
 		c.Functions[i].ExpectReply = fn["expectreply"].(bool)
 	}
-	log.Printf("%+v", c)
+
 	return nil
 }
