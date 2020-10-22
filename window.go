@@ -21,8 +21,8 @@ var (
 )
 
 // msgError displays dialog to user with error details
-func msgError(p *walk.MainWindow, err error) {
-	walk.MsgBox(p, errorTitle, err.Error(), walk.MsgBoxIconError)
+func msgError(err error) {
+	walk.MsgBox(nil, errorTitle, err.Error(), walk.MsgBoxIconError|walk.MsgBoxServiceNotification)
 }
 
 // xFunc is a wrapper to call executeFunction and notify user of any errors
@@ -30,34 +30,16 @@ func xFunc(p *walk.MainWindow, f int) {
 	err := executeFunction(f)
 	if err != nil {
 		log.Printf("%+v", err)
-		msgError(p, err)
+		msgError(err)
 	}
 }
 
 // civkeyerWindow creates the main window and begins processing of user input
 func civkeyerWindow() error {
-	var tempWin *walk.MainWindow
 	var mainWin *walk.MainWindow
 
 	// load app icon
 	ico, err := walk.Resources.Icon("3")
-	if err != nil {
-		log.Printf("%+v", err)
-		return err
-	}
-
-	// this window is used to be the parent of any error messages during initialization
-	tw := declarative.MainWindow{
-		AssignTo: &tempWin,
-		Title:    appName,
-		Icon:     ico,
-		Size:     declarative.Size{Width: 1, Height: 1},
-		Layout:   declarative.Grid{},
-		Visible:  false,
-	}
-
-	// create temporary window
-	err = tw.Create()
 	if err != nil {
 		log.Printf("%+v", err)
 		return err
@@ -73,7 +55,7 @@ func civkeyerWindow() error {
 	err = flg.Parse(os.Args[1:])
 	if err != nil {
 		e := fmt.Errorf("%s\n\nUsage of %s\n  -config string\n    Configuration file", err.Error(), os.Args[0])
-		msgError(tempWin, e)
+		msgError(e)
 		log.Printf("%+v", err)
 		return err
 	}
@@ -81,7 +63,7 @@ func civkeyerWindow() error {
 	// log file is in the same directory as the executable with the same base name
 	fn, err := os.Executable()
 	if err != nil {
-		msgError(tempWin, err)
+		msgError(err)
 		log.Printf("%+v", err)
 		return err
 	}
@@ -90,7 +72,7 @@ func civkeyerWindow() error {
 	// log to file
 	f, err := os.OpenFile(basefn+".log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		msgError(tempWin, err)
+		msgError(err)
 		log.Printf("%+v", err)
 		return err
 	}
@@ -110,13 +92,13 @@ func civkeyerWindow() error {
 	// #nosec G304
 	bytes, err := ioutil.ReadFile(cfn)
 	if err != nil {
-		msgError(tempWin, err)
+		msgError(err)
 		log.Printf("%+v", err)
 		return err
 	}
 	err = yaml.Unmarshal(bytes, &config)
 	if err != nil {
-		msgError(tempWin, err)
+		msgError(err)
 		log.Printf("%+v", err)
 		return err
 	}
@@ -149,7 +131,7 @@ func civkeyerWindow() error {
 	// create window
 	err = mw.Create()
 	if err != nil {
-		msgError(tempWin, err)
+		msgError(err)
 		log.Printf("%+v", err)
 		return err
 	}
@@ -157,9 +139,6 @@ func civkeyerWindow() error {
 	// disable maximize, minimize, and resizing
 	hwnd := mainWin.Handle()
 	win.SetWindowLong(hwnd, win.GWL_STYLE, win.GetWindowLong(hwnd, win.GWL_STYLE) & ^(win.WS_MAXIMIZEBOX|win.WS_MINIMIZEBOX|win.WS_SIZEBOX))
-
-	// close temporary window
-	win.DestroyWindow(tempWin.Handle())
 
 	// start message loop
 	mainWin.Run()

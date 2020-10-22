@@ -7,15 +7,15 @@ default: fmt codetest
 get:
 	GOOS=windows GOARCH=amd64 go get -v ./...
 	go get github.com/akavel/rsrc
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(shell go env GOPATH)/bin v1.20.0
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.31.0
 
 codetest: lint vet
 
 build: default
 	mkdir -p target
-	rm -f target/*
-	$(shell go env GOPATH)/bin/rsrc -manifest $(package).manifest -ico $(package).ico -o $(package).syso
-	GOOS=windows GOARCH=amd64 go build -v -ldflags -H=windowsgui -o target/$(package).exe
+	rm -f target/$(package).exe target/$(package).log
+	$(shell go env GOPATH)/bin/rsrc -arch amd64 -manifest $(package).manifest -ico $(package).ico -o $(package).syso
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC="x86_64-w64-mingw32-gcc" go build -v -ldflags "-s -w -H=windowsgui" -o target/$(package).exe
 
 setup: build
 	cp $(package).yaml target/
