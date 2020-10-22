@@ -1,0 +1,20 @@
+connection:
+  port: COM9
+  baud: 9600
+functions:
+  -
+    label: F1 Callsign
+    message: FEFE94E0280001FD
+    expectreply: true
+  -
+    label: F2 Exchange
+    message: FEFE94E0280002FD
+    expectreply: true
+  -
+    label: F3 CQ
+    message: FEFE94E0280003FD
+    expectreply: true
+  -
+    label: F4 QRZ
+    message: FEFE94E0280004FD
+    expectreply: true

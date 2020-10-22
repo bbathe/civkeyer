@@ -13,6 +13,7 @@
 
 # Configuration files
 *.yaml
+!civkeyer.yaml
 
 # Build target directory
 target/
